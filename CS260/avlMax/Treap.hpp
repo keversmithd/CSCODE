@@ -1,39 +1,38 @@
-#ifndef BINTRE
-#define BINTRE
-
-//unbalanced with useful trees
+#ifndef TREAP_H
+#define TREAP_H
 
 #include "Deque.hpp"
-
+#include "ran.hpp"
 template<typename T>
-struct BTNode
+struct TRPNode
 {   
     int size = 1;
     int depth = 0;
     int height = 0;
 
     T value;
-    BTNode<T>* left;
-    BTNode<T>* right;
-    BTNode<T>* parent;
+    TRPNode<T>* left;
+    TRPNode<T>* right;
+    TRPNode<T>* parent;
+    int p = 0;
     
 };
 
 template<typename T>
-struct BTree
+struct TRPTree
 {
-    BTNode<T>* root;
+    TRPNode<T>* root;
     int elements;
     int(*c)(T a, T b);
 
-    BTree(int(*compare)(T a, T b)) : root(nullptr), c(nullptr), elements(0)
+    TRPTree(int(*compare)(T a, T b)) : root(nullptr), c(nullptr), elements(0)
     {
         c = compare;
         if(c == nullptr){throw ("agggg");}
 
     }
 
-    int depth(BTNode<T>* u)
+    int depth(TRPNode<T>* u)
     {
         int d = 0;
         while(u != root)
@@ -44,13 +43,13 @@ struct BTree
         return d;
     }
 
-    int size(BTNode<T>* u)
+    int size(TRPNode<T>* u)
     {
         if(u == nullptr) return 0;
         return 1 + size(u->left) + size(u->right);
     }
 
-    int height(BTNode<T>* u)
+    int height(TRPNode<T>* u)
     {
         if (u == nullptr) return -1;
         int lheight = height(u->left);
@@ -58,7 +57,7 @@ struct BTree
         return 1 + (lheight > rheight) ? lheight : rheight;  
     }
 
-    void traverse(BTNode<T>* u)
+    void traverse(TRPNode<T>* u)
     {
         if (u == nullptr) return;
         traverse(u->left);
@@ -67,7 +66,7 @@ struct BTree
 
     void traverse2()
     {
-        BTNode<T>* u = root, prev = nullptr, next = nullptr;
+        TRPNode<T>* u = root, prev = nullptr, next = nullptr;
         
         while(u != nullptr) //while u not nullptr
         {
@@ -104,9 +103,9 @@ struct BTree
 
     int size2()
     {
-        BTNode<T>* u = root;
-        BTNode<T>* prev = nullptr;
-        BTNode<T>* next = nullptr;
+        TRPNode<T>* u = root;
+        TRPNode<T>* prev = nullptr;
+        TRPNode<T>* next = nullptr;
         int n = 0;
         while(u != nullptr)
         {
@@ -132,11 +131,11 @@ struct BTree
 
     void bfTraverse()
     {
-        Deque<BTNode<T>*> q;
+        Deque<TRPNode<T>*> q;
         if(root != nullptr) q.addTail(root);
         while(!q.isEmpty())
         {
-            BTNode<T>* u = q.removeHead();
+            TRPNode<T>* u = q.removeHead();
             if(u->left != nullptr) q.addTail(u->left);
             if(u->right != nullptr) q.addTail(u->right);
         }
@@ -145,7 +144,7 @@ struct BTree
     T findEQ(T x)
     {
 
-        BTNode<T>* u = root;
+        TRPNode<T>* u = root;
         while (u != nullptr)
         {
             int comp = compare(x, u->value);
@@ -163,7 +162,7 @@ struct BTree
 
     T find(T x, bool& found)
     {
-        BTNode<T>* w = root, z = nullptr;
+        TRPNode<T>* w = root, z = nullptr;
         while(w != nullptr)
         {
             int comp = c(x, w->x);
@@ -187,10 +186,10 @@ struct BTree
         }
         return T();
     }
-    BTNode<T>* findNode(T x, bool& found)
+    TRPNode<T>* findNode(T x, bool& found)
     {
-        BTNode<T>* w = root;
-        BTNode<T>* z = nullptr;
+        TRPNode<T>* w = root;
+        TRPNode<T>* z = nullptr;
         while(w != nullptr)
         {
             int comp = c(x, w->value);
@@ -216,22 +215,67 @@ struct BTree
     }
     bool add(T x)
     {
-        BTNode<T>* p = findLast(x);
-        BTNode<T>* q = new BTNode<T>();
-        if(p)
-        {
-            q->depth = p->depth + 1;
-        }
+        TRPNode<T>* q = new TRPNode<T>();
         q->value = x;
+        q->p = dis(gen);
 
-        return addChild(p, q);
+
+        TRPNode<T>* p = findLast(x);
+        
+        if(addChild(p, q))
+        {
+            bubbleUp(q);
+            return true;
+        }
+        return false;
     }
 
-    BTNode<T>* findLast(T x)
+    void bubbleUp(TRPNode<T>* u)
     {
-        BTNode<T>* w = root;
-        BTNode<T>* prev  = nullptr;
-        Deque<BTNode<T>*> UpChain;
+        while(u->parent != nullptr && u->parent->p > u->p)
+        {
+            if(u->parent->right == u)
+            {
+                rotateLeft(u->parent);
+            }else
+            {
+                rotateRight(u->parent);
+            }
+        }
+        if(u->parent == nullptr)
+        {
+            root = u;
+        }
+    }
+
+    void trickleDown(TRPNode<T>* u)
+    {
+        while(u->left != nullptr || u->right != nullptr)
+        {
+            if(u->left == nullptr)
+            {
+                rotateLeft(u);
+            }else if(u->right == nullptr)
+            {
+                rotateRight(u);
+            }else if(u->left->p < u->right->p)
+            {
+                rotateRight(u);
+            }else{
+                rotateLeft(u);
+            }
+            if(root == u)
+            {
+                root = u->parent;
+            }
+        }
+    }
+
+    TRPNode<T>* findLast(T x)
+    {
+        TRPNode<T>* w = root;
+        TRPNode<T>* prev  = nullptr;
+        Deque<TRPNode<T>*> UpChain;
         while(w != nullptr)
         {
             UpChain.addTail(w);
@@ -248,7 +292,7 @@ struct BTree
 
         while(!UpChain.isEmpty())
         {
-            BTNode<T>* q = UpChain.removeTail();
+            TRPNode<T>* q = UpChain.removeTail();
             q->size = 1 + (q->left ?  q->left->size : 0) + (q->right ? q->right->size : 0);
             q->height = 1 + std::max((q->left ? q->left->height : 0), (q->right ? q->right->height : 0));
             q->depth = 1 + (q->parent ? q->parent->depth : -1);
@@ -257,7 +301,7 @@ struct BTree
         return prev;
     }
 
-    bool addChild(BTNode<T>* p, BTNode<T>* u)
+    bool addChild(TRPNode<T>* p, TRPNode<T>* u)
     {
         if(p == nullptr)
         {
@@ -287,10 +331,10 @@ struct BTree
         return true;
     }
     
-    void splice(BTNode<T>* u)
+    void splice(TRPNode<T>* u)
     {
-        BTNode<T>* s;
-        BTNode<T>* p;
+        TRPNode<T>* s;
+        TRPNode<T>* p;
 
         if(u->left != nullptr) //if u has a left child
         { 
@@ -334,40 +378,54 @@ struct BTree
         elements--;
     }
 
-    void remove(const T value)
+    bool remove(const T x)
     {
-        BTNode<T>* w = root;
-        while(w != nullptr)
+        TRPNode<T>* u = findLast(x);
+        if(u != nullptr && c(u->value, x) == 0)
         {
-            int comp = c(value, w->value);
-            if(comp == 1)
-                w = w->left;
-            else if(comp == 2)
-                w = w->right;
-            else
-            {
-                removeNode(w);
-                w = nullptr;
-            }
-                
+            trickleDown(u);
+            splice(u);
+            return true;
         }
+        return false;
     }
 
-    void removeNode(BTNode<T>* u)
+    // void remove(const T value)
+    // {
+
+
+    //     TRPNode<T>* w = root;
+    //     while(w != nullptr)
+    //     {
+    //         int comp = c(value, w->value);
+    //         if(comp == 1)
+    //             w = w->left;
+    //         else if(comp == 2)
+    //             w = w->right;
+    //         else
+    //         {
+    //             removeNode(w);
+    //             w = nullptr;
+    //         }
+                
+    //     }
+    // }
+
+    void removeNode(TRPNode<T>* u)
     {
         if(u->left == nullptr || u->right == nullptr)
         {
             splice(u);
         }
         else {
-            BTNode<T>* w = u->right;
+            TRPNode<T>* w = u->right;
             while(w->left != nullptr)
                 w = w->left;
             u->value = w->value;
             splice(w);
         }
 
-        BTNode<T>* p = u->parent;
+        TRPNode<T>* p = u->parent;
         while (p != nullptr)
         {
             p->size = 1 + (p->left ? p->left->size : 0) + (p->right ? p->right->size : 0);
@@ -382,12 +440,12 @@ struct BTree
         Deque<T> lessThanOrEqual;
 
         bool Found = false;
-        BTNode<T>* r = findNode(x, Found);
+        TRPNode<T>* r = findNode(x, Found);
         if(!Found)
         {
             return lessThanOrEqual;
         }
-        Deque<BTNode<T>*> nodes;
+        Deque<TRPNode<T>*> nodes;
         nodes.addTail(r);
         bool leaf = false;
         while(!nodes.isEmpty())
@@ -419,6 +477,55 @@ struct BTree
 
         return lessThanOrEqual;
 
+
+    }
+
+    void rotateLeft(TRPNode<T>* u)
+    {
+        TRPNode<T>* w = u->right;
+        w->parent = u->parent;
+        if(w->parent != nullptr)
+        {
+            if(w->parent->left == u)
+            {
+                w->parent->left = w;
+            }else{
+                w->parent->right = w;
+            }
+        }
+        u->right = w->left;
+        if(u->right != nullptr)
+        {
+            u->right->parent = u;
+        }
+        u->parent = w;
+        w->left = u;
+        if(u == root) { root = w; root->parent = nullptr;}
+    }
+
+    void rotateRight(TRPNode<T>* u)
+    {
+        TRPNode<T>* w = u->left;
+        w->parent = u->parent;
+
+        if(w->parent != nullptr)
+        {
+            if(w->parent->left == u)
+            {
+                w->parent->left = w;
+            }else
+            {
+                w->parent->right = w;
+            }
+        }
+        u->left = w->right;
+        if(u->left != nullptr)
+        {
+            u->left->parent = u;
+        }
+        u->parent = w;
+        w->right = u;
+        if (u == root) { root = w; root->parent = nullptr; }
 
     }
 

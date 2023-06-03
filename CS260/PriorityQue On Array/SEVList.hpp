@@ -16,12 +16,12 @@ struct SEVNode
 };
 
 template<typename T>
-struct SEDLocation
+struct SEVLocation
 {
     SEVNode<T>* nodal;
     int index;
-    SEDLocation(){}
-    SEDLocation(SEVNode<T>* Nodal, int Index)
+    SEVLocation(){}
+    SEVLocation(SEVNode<T>* Nodal, int Index)
     {
         nodal = Nodal;
         index = Index;
@@ -30,21 +30,21 @@ struct SEDLocation
 
 
 template<typename T>
-struct SEDLocation
+struct SEVList
 {
 private:
     SEVNode<T> root;
     int numberOfElements;
     int boundLimit;
 public:
-    SEList(int bounds = 5) : root(0), numberOfElements(0), boundLimit(bounds)
+    SEVList(int bounds = 5) : root(0), numberOfElements(0), boundLimit(bounds)
     {
         if(bounds <= 0)
         {
             boundLimit = 5;
         }
     }
-    SEDLocation<T> getLocation(int i)
+    SEVLocation<T> getLocation(int i)
     {
         if(i >= numberOfElements)
         {
@@ -61,7 +61,7 @@ public:
                 nodal = nodal->next;
             }
 
-            return SEDLocation<T>(nodal, i);
+            return SEVLocation<T>(nodal, i);
 
         }else {
 
@@ -74,19 +74,19 @@ public:
                 nodal = nodal->prev;
                 idx -= nodal->value.size();
             }
-            return Location<T>(nodal, i-idx);
+            return SEVLocation<T>(nodal, i-idx);
         }
     }
 
     T get(int i)
     {
-        SEDLocation<T> l = getLocation(i);
+        SEVLocation<T> l = getLocation(i);
         return l.nodal->value.at(l.index);
     }
 
     T set(int i, T element)
     {
-        SEDLocation<T> l = getLocation(i);
+        SEVLocation<T> l = getLocation(i);
         T value = l.nodal->value.at(l.index);
         l.nodal->value[l.index] = element;
         return value;
@@ -157,7 +157,7 @@ public:
             return;
         }
 
-        SEDLocation<T> block = getLocation(i);
+        SEVLocation<T> block = getLocation(i);
         SEVNode<T>* blockPointer = block.nodal;
 
         int r = 0;
@@ -246,7 +246,7 @@ public:
 
     T remove(int i)
     {
-        SEDLocation<T> location = getLocation(i); //Get location
+        SEVLocation<T> location = getLocation(i); //Get location
         T suspectValue = location.nodal->value.at(location.index); //Gather the actuall value at location i
 
         SEVNode<T>* nodal = location.nodal; //assign to location node.

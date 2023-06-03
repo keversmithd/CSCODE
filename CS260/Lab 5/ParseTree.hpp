@@ -6,19 +6,23 @@
 struct ParseNode
 {
     char value;
-    ParseNode* left;
-    ParseNode* right;
+    ParseNode* left = nullptr;
+    ParseNode* right = nullptr;
 };
 
 struct ParseTree
 {
-    Deque<ParseNode> ParseStack;
+    bool think;
+    Deque<ParseNode*> ParseStack;
     ParseTree(std::string expression);
-    ParseNode doParse(std::string expression);
+    ParseNode* doParse(std::string expression);
+    void parseInOrder(std::string expression);
+    bool isOperand(const char letter);
     std::string preOrder();
     std::string inOrder();
     std::string postOrder();
     std::string display();
+
     ~ParseTree();
 };
 

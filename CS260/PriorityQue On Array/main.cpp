@@ -1,34 +1,33 @@
 #include <iostream>
-#include "SEDList.hpp"
-#include "SEVList.hpp"
+
+#include "SkipList.hpp"
+
+#include "IArray.hpp"
+
+int compare(const int A, const int B)
+{
+    if(A == B)
+    {
+        return 0;
+    }
+
+    return (A > B) ? 2 : 1;
+
+}
 int main()
 {
-    SEList<int> i(1);
-    bool added = i.add(23);
-    added = i.add(44);
-    i.showLists();
-    added = i.add(44);
-    i.showLists();
 
-    std::cout << "value removed" << i.remove(0) << std::endl;
-    i.showLists();
+    int k = 1;
 
-    Location<int> someKindOfLocation = i.getLocation(0);
+    SkipList<int> sk(compare, -1);
 
+    sk.add(22);
+    sk.remove(22);
+    std::cout << sk.find(22) << std::endl;
+    sk.add(34);
+    std::cout << sk.find(34) << std::endl;
 
-    someKindOfLocation = i.getLocation(1);
-
-
-    // someKindOfLocation = i.getLocation(2);
-    // std::cout << someKindOfLocation.nodal->value.at(someKindOfLocation.index) << std::endl;
-
-
-    i.add(1, 24);
-    i.showLists();
-    i.add(1, 25);
-    i.add(1, 21);
-    i.showLists();
-
+    return -1;
 
 
 }

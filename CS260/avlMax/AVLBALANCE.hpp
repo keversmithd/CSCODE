@@ -55,10 +55,16 @@ struct avl_tree
     }
     int difference(avl_node<T>* t) //log n
     {
-        int l_height = height(t->left);
-        int r_height = height(t->right);
-        int b_factor = l_height-r_height;
-        return b_factor;
+        if(t != nullptr)
+        {
+            int l_height = height(t->left);
+            int r_height = height(t->right);
+            int b_factor = l_height-r_height;
+            return b_factor;
+        }
+
+        return 0;
+        
     }
     //Possible optimization of keeping the height of the sub tree at each node
     avl_node<T>* rr_rotate(avl_node<T>* parent)
@@ -140,6 +146,88 @@ struct avl_tree
         } return r;
 
         
+    }
+
+
+    void remove(T value)
+    {
+        if(root == nullptr){return;}
+        avl_node<T>* removalSearch = root;
+        avl_node<T>* parent = nullptr;
+
+        int lr = 0;
+        bool removed = false;
+
+        while(removalSearch != nullptr && removed == false)
+        {
+            if(c_left(value, removalSearch->value))
+            {
+                parent = removalSearch;
+                lr = 0;
+                removalSearch = removalSearch->left;
+            }else if(c_right(value, removalSearch->value))
+            {
+                parent = removalSearch;
+                lr = 1;
+                removalSearch = removalSearch->right;
+            }else
+            {
+                if(removalSearch->left != nullptr && removalSearch->right != nullptr)
+                {
+                    avl_node<T>* temp = removalSearch->right;
+                    avl_node<T>* p = removalSearch;
+
+                    while(temp->left != nullptr)
+                    {
+                        p = temp;
+                        temp = temp->left;
+                    }
+
+                    removalSearch->value = temp->value;
+                    if(p == removalSearch)
+                    {
+                        removalSearch->right = temp->right;
+                    }else
+                    {
+                        p->left = temp->right;
+                    }
+
+                    delete temp;
+                    elements--;
+                    removed = true;
+                }else
+                {
+                    avl_node<T>* temp = removalSearch->left ? removalSearch->left : removalSearch->right;
+                    if(temp == nullptr)
+                    {
+                        if(lr == 0)
+                        {
+                            parent->left = nullptr;
+                        }else
+                        {
+                            parent->right = nullptr;
+                        }
+
+                        temp = removalSearch;
+
+                    }else
+                    {
+                        *removalSearch = *temp;
+                    }
+
+                    delete temp;
+
+                    elements--;
+                    removed = true;
+                }
+            }
+        }
+
+
+        root = balance(root);
+
+        
+
     }
 
     
@@ -265,6 +353,7 @@ struct avl_tree
                 leftChild.x = p.x - innerSpacing;
                 leftChild.y = -currentLevel;
 
+                
                 q.addTail(leftChild);
 
                 avl_node_parent<T> rightChild;

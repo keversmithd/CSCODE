@@ -1,14 +1,16 @@
+
 #ifndef DEQU_H
-#define DEQU_h
+#define DEQU_H
 
 
+#include <string>
 #include <cmath>
 #include <stdexcept>
 
 template<typename T>
 class Deque {
 public:
-    Deque(int preferredSize = 0) : queData(nullptr), head(0), tail(0), capacity(0), size(0)
+    Deque(int preferredSize = 0) : head(0), tail(0), capacity(0), size(0), queData(nullptr)
     {
         if(preferredSize == 0) //resizes if preferred size is zero for this deque.
         {
@@ -21,51 +23,18 @@ public:
     }
     ~Deque()
     {
-
         if(queData != nullptr)
         {
             delete[] queData;
         }
-
     }
     void addTail(T element)
     {
-
         if (size == capacity) {
             resize(capacity * 2); // Double the capacity if deque is full
         }
         tail = (tail + 1) % capacity; // Move tail circularly
         queData[tail] = element;      // Add element to tail
-        size++;
-
-    }
-    
-    void add(int i, T element)
-    {
-
-        if(i < 0 || i > size)
-        {
-            return;
-        }
-        if(size+1 > capacity)
-        {
-            resize(capacity * 2);
-        }
-        if (i < size/2)
-        {
-            for (int k = 0; k<= i-1; k++)
-            {
-                queData[(head+k)%capacity] = queData[(head+k+1)%capacity];
-            }
-        }else
-        {
-            for (int k = size; k > i; k--)
-            {
-                queData[(head+k)%capacity] = queData[(head+k-1)%capacity];
-            }
-            
-        }
-        queData[(head+i)%capacity] = element;
         size++;
     }
     void addHead(T element)
@@ -90,27 +59,30 @@ public:
         }
         return removedElement;
     }
-
-    T getTail()
-    {
-        if (size == 0) {
-            throw std::out_of_range("removed tail with no values");
-        }
-        return queData[tail];
-    }
-
-    T getHead()
-    {
-        if (size == 0) {
-            throw std::out_of_range("removed tail with no values");
-        }
-        return queData[head];
-    }
     bool isEmpty()
     {
-        return (size <= 0); //returns whether the capacity is zero or not.
+        return (size == 0);
     }
+    std::string dumpArray()
+    {
+        std::string gValue; //creates a string.
+        for(int i = 0; i < capacity; i++)
+        {
+            gValue += std::to_string(queData[i]) + ", "; //for each value in the deque from zero to capacity, append the value in string form.
+        }
+        return gValue;
+    }
+    std::string listQueue()
+    {
+         std::string gValue; //create string.
+        for(int i = 0; i < capacity; i++) //for each element in the array.
+        {
+            int modDex = (head+i) % capacity; //calculate modulated index.
+            gValue += std::to_string(queData[modDex]) + ", "; //append value to the string.
 
+        }
+        return gValue;
+    }
     T removeHead()
     {
         if (size == 0) {
@@ -139,13 +111,6 @@ public:
         }
         
         queData = newData;  // Point queData to new array
-    }
-
-    void clear()
-    {
-        size = 0;
-        head = 0;
-        tail = size-1;
     }
 
 private:
